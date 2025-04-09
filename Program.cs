@@ -64,6 +64,7 @@ static class Program
             var cellValue = cells[row, col];
             if (cellValue != 0 && cellValue != 1)
             {
+                // TODO: Move user strings to resources
                 Console.WriteLine($"Something went wrong. Unknown cell value. [{row}, {col}] = {cellValue}");
                 return null;
             }

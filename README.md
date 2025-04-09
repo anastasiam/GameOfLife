@@ -38,3 +38,6 @@ Now you can compile and run the app.
 ```cmd
 dotnet run
 ```
+
+*P.S. In preparation to the assignment review I've created a branch with some of the improvements to the original implementation. 
+PR with the improvements is here: [if-i-had-more-time](https://github.com/anastasiam/GameOfLife/pull/1)*
