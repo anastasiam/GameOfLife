@@ -16,7 +16,8 @@ static class Program
         // TODO: validate user input so that only 1 and 0 is allowed and no more than 25x25
         // TODO: Allow user to enter array of any size
 
-        var cells = new byte[25, 25];
+        byte[,] cells = new byte[25, 25];
+        byte[,] buffer = new byte[25, 25];
 
         // Place initial pattern in the center of an array
         PlacePatternCentered(cells, glider);
@@ -28,8 +29,15 @@ static class Program
 
             if (key.Key == ConsoleKey.Escape) return;
 
-            cells = NextGeneration(cells);
-            if (cells is null)
+            var isSuccess = NextGeneration(cells, buffer);
+
+            // Syntax sugar for:
+            // var temp = cells;
+            // cells = buffer;
+            // buffer = temp;
+            (cells, buffer) = (buffer, cells);
+
+            if (!isSuccess)
             {
                 Console.WriteLine("""
                                   Error occurred.
@@ -45,10 +53,8 @@ static class Program
         }
     }
 
-    private static byte[,]? NextGeneration(byte[,] cells)
+    private static bool NextGeneration(byte[,] cells, byte[,] nextGeneration)
     {
-        // TODO: Don't allocate memory for the next generation every time. use buffer
-        var nextGeneration = new byte[25, 25];
         var rowLength = cells.GetLength(0);
         var colLength = cells.GetLength(1);
 
@@ -60,7 +66,7 @@ static class Program
             {
                 // TODO: Move user strings to resources
                 Console.WriteLine($"Something went wrong. Unknown cell value. [{row}, {col}] = {cellValue}");
-                return null;
+                return false;
             }
 
             var aliveCellsCount = 0;
@@ -92,7 +98,7 @@ static class Program
             }
         }
 
-        return nextGeneration;
+        return true;
     }
 
     private static void DisplayCells(byte[,] cells)
