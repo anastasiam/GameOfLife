@@ -4,20 +4,19 @@ static class Program
 {
     static void Main()
     {
-        // TODO: use enum Live, Dead
-        var glider = new byte[,]
+        var glider = new [,]
         {
-            { 0, 1, 0 },
-            { 0, 0, 1 },
-            { 1, 1, 1 }
+            { CellState.Dead, CellState.Live, CellState.Dead },
+            { CellState.Dead, CellState.Dead, CellState.Live },
+            { CellState.Live, CellState.Live, CellState.Live }
         };
 
         // TODO: allow user to input the entry pattern
         // TODO: validate user input so that only 1 and 0 is allowed and no more than 25x25
         // TODO: Allow user to enter array of any size
 
-        byte[,] cells = new byte[25, 25];
-        byte[,] buffer = new byte[25, 25];
+        var cells = new CellState[25, 25];
+        var buffer = new CellState[25, 25];
 
         // Place initial pattern in the center of an array
         PlacePatternCentered(cells, glider);
@@ -29,31 +28,18 @@ static class Program
 
             if (key.Key == ConsoleKey.Escape) return;
 
-            var isSuccess = NextGeneration(cells, buffer);
+            NextGeneration(cells, buffer);
 
             // Syntax sugar for:
             // var temp = cells;
             // cells = buffer;
             // buffer = temp;
             (cells, buffer) = (buffer, cells);
-
-            if (!isSuccess)
-            {
-                Console.WriteLine("""
-                                  Error occurred.
-                                  Press any key to exit.
-                                  """);
-
-                // TODO: Go back to main menu
-                Console.ReadKey(intercept: true);
-                return;
-            }
-
             DisplayCells(cells);
         }
     }
 
-    private static bool NextGeneration(byte[,] cells, byte[,] nextGeneration)
+    private static void NextGeneration(CellState[,] cells, CellState[,] nextGeneration)
     {
         var rowLength = cells.GetLength(0);
         var colLength = cells.GetLength(1);
@@ -62,13 +48,6 @@ static class Program
         for (var col = 0; col < colLength; col++)
         {
             var cellValue = cells[row, col];
-            if (cellValue != 0 && cellValue != 1)
-            {
-                // TODO: Move user strings to resources
-                Console.WriteLine($"Something went wrong. Unknown cell value. [{row}, {col}] = {cellValue}");
-                return false;
-            }
-
             var aliveCellsCount = 0;
 
             for (var neighbourRow = row - 1; neighbourRow <= row + 1; neighbourRow++)
@@ -84,27 +63,26 @@ static class Program
             }
 
             // TODO: Place all numbers to consts
-            if (cellValue == 1)
+            if (cellValue == CellState.Live)
             {
-                nextGeneration[row, col] = aliveCellsCount < 2 || aliveCellsCount > 3 ? (byte)0 : (byte)1;
+                nextGeneration[row, col] = aliveCellsCount < 2 || aliveCellsCount > 3 ? CellState.Dead : CellState.Live;
             }
             else if (aliveCellsCount == 3)
             {
-                nextGeneration[row, col] = 1;
+                nextGeneration[row, col] = CellState.Live;
             }
             else
             {
                 nextGeneration[row, col] = cellValue;
             }
         }
-
-        return true;
     }
 
-    private static void DisplayCells(byte[,] cells)
+    private static void DisplayCells(CellState[,] cells)
     {
         Console.Clear();
 
+        // TODO: put user messages to resources
         // TODO: show generation number
         Console.WriteLine("""
                           Welcome to the Game of Life!
@@ -117,14 +95,14 @@ static class Program
         {
             for (var col = 0; col < cells.GetLength(1); col++)
             {
-                Console.Write(cells[row, col] == 1 ? "■ " : "□ ");
+                Console.Write(cells[row, col] == CellState.Live ? "■ " : "□ ");
             }
 
             Console.WriteLine();
         }
     }
 
-    private static void PlacePatternCentered(byte[,] grid, byte[,] pattern)
+    private static void PlacePatternCentered(CellState[,] grid, CellState[,] pattern)
     {
         var gridRows = grid.GetLength(0);
         var gridCols = grid.GetLength(1);
