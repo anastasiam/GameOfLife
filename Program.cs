@@ -2,11 +2,13 @@
 
 static class Program
 {
-    private const byte MinAliveCallsToLive = 2;
-    private const byte MaxAliveCallsToLive = 3;
+    private const byte MinLiveNeighborsToSurvive = 2;
+    private const byte MaxLiveNeighborsToSurvive = 3;
 
     private const string AliveCellSymbol = "■ ";
     private const string DeadCellSymbol = "□ ";
+
+    private const int CellsArraySize = 25;
 
     static void Main()
     {
@@ -24,8 +26,8 @@ static class Program
             // TODO: Allow user to enter array of any size
 
             var generationNumber = 0;
-            var cells = new CellState[25, 25];
-            var buffer = new CellState[25, 25];
+            var cells = new CellState[CellsArraySize, CellsArraySize];
+            var buffer = new CellState[CellsArraySize, CellsArraySize];
 
             // Place initial pattern in the center of an array
             PlacePatternCentered(cells, glider);
@@ -48,7 +50,7 @@ static class Program
                 DisplayCells(cells, generationNumber);
             }
         }
-        catch (Exception e)
+        catch (Exception)
         {
             // TODO: Log exception
             Console.WriteLine("An error occurred, please contact customer support. Press any key to exit.");
@@ -83,11 +85,11 @@ static class Program
             if (cellValue == CellState.Live)
             {
                 nextGeneration[row, col] =
-                    aliveCellsCount < MinAliveCallsToLive || aliveCellsCount > MaxAliveCallsToLive
+                    aliveCellsCount < MinLiveNeighborsToSurvive || aliveCellsCount > MaxLiveNeighborsToSurvive
                         ? CellState.Dead
                         : CellState.Live;
             }
-            else if (aliveCellsCount == MaxAliveCallsToLive)
+            else if (aliveCellsCount == MaxLiveNeighborsToSurvive)
             {
                 nextGeneration[row, col] = CellState.Live;
             }
