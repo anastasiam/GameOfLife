@@ -4,7 +4,7 @@ static class Program
 {
     static void Main()
     {
-        var glider = new [,]
+        var glider = new[,]
         {
             { CellState.Dead, CellState.Live, CellState.Dead },
             { CellState.Dead, CellState.Dead, CellState.Live },
@@ -15,12 +15,13 @@ static class Program
         // TODO: validate user input so that only 1 and 0 is allowed and no more than 25x25
         // TODO: Allow user to enter array of any size
 
+        var generationNumber = 0;
         var cells = new CellState[25, 25];
         var buffer = new CellState[25, 25];
 
         // Place initial pattern in the center of an array
         PlacePatternCentered(cells, glider);
-        DisplayCells(cells);
+        DisplayCells(cells, generationNumber);
 
         while (true)
         {
@@ -35,7 +36,8 @@ static class Program
             // cells = buffer;
             // buffer = temp;
             (cells, buffer) = (buffer, cells);
-            DisplayCells(cells);
+            generationNumber++;
+            DisplayCells(cells, generationNumber);
         }
     }
 
@@ -78,18 +80,20 @@ static class Program
         }
     }
 
-    private static void DisplayCells(CellState[,] cells)
+    private static void DisplayCells(CellState[,] cells, int generationNumber)
     {
         Console.Clear();
 
         // TODO: put user messages to resources
         // TODO: show generation number
-        Console.WriteLine("""
-                          Welcome to the Game of Life!
-                          Use the following keys:
-                            Press Any Key - Next Generation
-                            Esc           - Exit the game
-                          """);
+        Console.WriteLine($"""
+                           Welcome to the Game of Life!
+                           Use the following keys:
+                             Press Any Key - Next Generation
+                             Esc           - Exit the game
+                             
+                             Generation {generationNumber}.
+                           """);
 
         for (var row = 0; row < cells.GetLength(0); row++)
         {
