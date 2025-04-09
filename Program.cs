@@ -68,28 +68,16 @@ static class Program
         for (var col = 0; col < colLength; col++)
         {
             var cellValue = cells[row, col];
-            var aliveCellsCount = 0;
-
-            for (var neighbourRow = row - 1; neighbourRow <= row + 1; neighbourRow++)
-            for (var neighbourCol = col - 1; neighbourCol <= col + 1; neighbourCol++)
-            {
-                if (neighbourRow < 0 || neighbourRow >= rowLength ||
-                    neighbourCol < 0 || neighbourCol >= colLength ||
-                    (neighbourRow == row && neighbourCol == col) ||
-                    cells[neighbourRow, neighbourCol] == 0)
-                    continue;
-
-                aliveCellsCount++;
-            }
+            var aliveNeighboursCount = CountAliveNeighbours(cells, row, col);
 
             if (cellValue == CellState.Live)
             {
                 nextGeneration[row, col] =
-                    aliveCellsCount < MinLiveNeighborsToSurvive || aliveCellsCount > MaxLiveNeighborsToSurvive
+                    aliveNeighboursCount < MinLiveNeighborsToSurvive || aliveNeighboursCount > MaxLiveNeighborsToSurvive
                         ? CellState.Dead
                         : CellState.Live;
             }
-            else if (aliveCellsCount == MaxLiveNeighborsToSurvive)
+            else if (aliveNeighboursCount == MaxLiveNeighborsToSurvive)
             {
                 nextGeneration[row, col] = CellState.Live;
             }
@@ -98,6 +86,28 @@ static class Program
                 nextGeneration[row, col] = cellValue;
             }
         }
+    }
+
+    private static int CountAliveNeighbours(CellState[,] cells, int row, int col)
+    {
+        var rowLength = cells.GetLength(0);
+        var colLength = cells.GetLength(1);
+
+        var aliveCellsCount = 0;
+
+        for (var neighbourRow = row - 1; neighbourRow <= row + 1; neighbourRow++)
+        for (var neighbourCol = col - 1; neighbourCol <= col + 1; neighbourCol++)
+        {
+            if (neighbourRow < 0 || neighbourRow >= rowLength ||
+                neighbourCol < 0 || neighbourCol >= colLength ||
+                (neighbourRow == row && neighbourCol == col) ||
+                cells[neighbourRow, neighbourCol] == 0)
+                continue;
+
+            aliveCellsCount++;
+        }
+
+        return aliveCellsCount;
     }
 
     private static void DisplayCells(CellState[,] cells, int generationNumber)
