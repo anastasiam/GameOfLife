@@ -2,6 +2,12 @@
 
 static class Program
 {
+    private const byte MinAliveCallsToLive = 2;
+    private const byte MaxAliveCallsToLive = 3;
+
+    private const string AliveCellSymbol = "■ ";
+    private const string DeadCellSymbol = "□ ";
+
     static void Main()
     {
         var glider = new[,]
@@ -64,12 +70,14 @@ static class Program
                 aliveCellsCount++;
             }
 
-            // TODO: Place all numbers to consts
             if (cellValue == CellState.Live)
             {
-                nextGeneration[row, col] = aliveCellsCount < 2 || aliveCellsCount > 3 ? CellState.Dead : CellState.Live;
+                nextGeneration[row, col] =
+                    aliveCellsCount < MinAliveCallsToLive || aliveCellsCount > MaxAliveCallsToLive
+                        ? CellState.Dead
+                        : CellState.Live;
             }
-            else if (aliveCellsCount == 3)
+            else if (aliveCellsCount == MaxAliveCallsToLive)
             {
                 nextGeneration[row, col] = CellState.Live;
             }
@@ -85,7 +93,6 @@ static class Program
         Console.Clear();
 
         // TODO: put user messages to resources
-        // TODO: show generation number
         Console.WriteLine($"""
                            Welcome to the Game of Life!
                            Use the following keys:
@@ -99,7 +106,7 @@ static class Program
         {
             for (var col = 0; col < cells.GetLength(1); col++)
             {
-                Console.Write(cells[row, col] == CellState.Live ? "■ " : "□ ");
+                Console.Write(cells[row, col] == CellState.Live ? AliveCellSymbol : DeadCellSymbol);
             }
 
             Console.WriteLine();
