@@ -10,40 +10,50 @@ static class Program
 
     static void Main()
     {
-        var glider = new[,]
+        try
         {
-            { CellState.Dead, CellState.Live, CellState.Dead },
-            { CellState.Dead, CellState.Dead, CellState.Live },
-            { CellState.Live, CellState.Live, CellState.Live }
-        };
+            var glider = new[,]
+            {
+                { CellState.Dead, CellState.Live, CellState.Dead },
+                { CellState.Dead, CellState.Dead, CellState.Live },
+                { CellState.Live, CellState.Live, CellState.Live }
+            };
 
-        // TODO: allow user to input the entry pattern
-        // TODO: validate user input so that only 1 and 0 is allowed and no more than 25x25
-        // TODO: Allow user to enter array of any size
+            // TODO: allow user to input the entry pattern
+            // TODO: validate user input so that only 1 and 0 is allowed and no more than 25x25
+            // TODO: Allow user to enter array of any size
 
-        var generationNumber = 0;
-        var cells = new CellState[25, 25];
-        var buffer = new CellState[25, 25];
+            var generationNumber = 0;
+            var cells = new CellState[25, 25];
+            var buffer = new CellState[25, 25];
 
-        // Place initial pattern in the center of an array
-        PlacePatternCentered(cells, glider);
-        DisplayCells(cells, generationNumber);
-
-        while (true)
-        {
-            var key = Console.ReadKey(intercept: true);
-
-            if (key.Key == ConsoleKey.Escape) return;
-
-            NextGeneration(cells, buffer);
-
-            // Syntax sugar for:
-            // var temp = cells;
-            // cells = buffer;
-            // buffer = temp;
-            (cells, buffer) = (buffer, cells);
-            generationNumber++;
+            // Place initial pattern in the center of an array
+            PlacePatternCentered(cells, glider);
             DisplayCells(cells, generationNumber);
+
+            while (true)
+            {
+                var key = Console.ReadKey(intercept: true);
+
+                if (key.Key == ConsoleKey.Escape) return;
+
+                NextGeneration(cells, buffer);
+
+                // Syntax sugar for:
+                // var temp = cells;
+                // cells = buffer;
+                // buffer = temp;
+                (cells, buffer) = (buffer, cells);
+                generationNumber++;
+                DisplayCells(cells, generationNumber);
+            }
+        }
+        catch (Exception e)
+        {
+            // TODO: Log exception
+            Console.WriteLine("An error occurred, please contact customer support. Press any key to exit.");
+    
+            Console.ReadKey(intercept: true);
         }
     }
 
