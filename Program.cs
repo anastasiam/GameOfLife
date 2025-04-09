@@ -20,34 +20,28 @@ static class Program
 
         // Place initial pattern in the center of an array
         PlacePatternCentered(cells, glider);
-
         DisplayCells(cells);
 
         while (true)
         {
             var key = Console.ReadKey(intercept: true);
 
-            switch (key.Key)
+            if (key.Key == ConsoleKey.Escape) return;
+
+            cells = NextGeneration(cells);
+            if (cells is null)
             {
-                case ConsoleKey.Escape:
-                    return;
-                default:
-                    cells = NextGeneration(cells);
-                    if (cells is null)
-                    {
-                        Console.WriteLine("""
-                                          Error occurred.
-                                          Press any key to exit.
-                                          """);
+                Console.WriteLine("""
+                                  Error occurred.
+                                  Press any key to exit.
+                                  """);
 
-                        // TODO: Go back to main menu
-                        Console.ReadKey(intercept: true);
-                        return;
-                    }
-
-                    DisplayCells(cells);
-                    break;
+                // TODO: Go back to main menu
+                Console.ReadKey(intercept: true);
+                return;
             }
+
+            DisplayCells(cells);
         }
     }
 
