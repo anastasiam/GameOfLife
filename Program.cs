@@ -2,59 +2,65 @@
 
 static class Program
 {
+    private const byte MinLiveNeighborsToSurvive = 2;
+    private const byte MaxLiveNeighborsToSurvive = 3;
+
+    private const string AliveCellSymbol = "■ ";
+    private const string DeadCellSymbol = "□ ";
+
+    private const int CellsArraySize = 25;
+
     static void Main()
     {
-        // TODO: use enum Live, Dead
-        var glider = new byte[,]
+        try
         {
-            { 0, 1, 0 },
-            { 0, 0, 1 },
-            { 1, 1, 1 }
-        };
-
-        // TODO: allow user to input the entry pattern
-        // TODO: validate user input so that only 1 and 0 is allowed and no more than 25x25
-        // TODO: Allow user to enter array of any size
-
-        var cells = new byte[25, 25];
-
-        // Place initial pattern in the center of an array
-        PlacePatternCentered(cells, glider);
-
-        DisplayCells(cells);
-
-        while (true)
-        {
-            var key = Console.ReadKey(intercept: true);
-
-            switch (key.Key)
+            var glider = new[,]
             {
-                case ConsoleKey.Escape:
-                    return;
-                default:
-                    cells = NextGeneration(cells);
-                    if (cells is null)
-                    {
-                        Console.WriteLine("""
-                                          Error occurred.
-                                          Press any key to exit.
-                                          """);
+                { CellState.Dead, CellState.Live, CellState.Dead },
+                { CellState.Dead, CellState.Dead, CellState.Live },
+                { CellState.Live, CellState.Live, CellState.Live }
+            };
 
-                        // TODO: Go back to main menu
-                        Console.ReadKey(intercept: true);
-                        return;
-                    }
+            // TODO: allow user to input the entry pattern
+            // TODO: validate user input so that only 1 and 0 is allowed and no more than 25x25
+            // TODO: Allow user to enter array of any size
 
-                    DisplayCells(cells);
-                    break;
+            var generationNumber = 0;
+            var cells = new CellState[CellsArraySize, CellsArraySize];
+            var buffer = new CellState[CellsArraySize, CellsArraySize];
+
+            // Place initial pattern in the center of an array
+            PlacePatternCentered(cells, glider);
+            DisplayCells(cells, generationNumber);
+
+            while (true)
+            {
+                var key = Console.ReadKey(intercept: true);
+
+                if (key.Key == ConsoleKey.Escape) return;
+
+                NextGeneration(cells, buffer);
+
+                // Syntax sugar for:
+                // var temp = cells;
+                // cells = buffer;
+                // buffer = temp;
+                (cells, buffer) = (buffer, cells);
+                generationNumber++;
+                DisplayCells(cells, generationNumber);
             }
+        }
+        catch (Exception)
+        {
+            // TODO: Log exception
+            Console.WriteLine("An error occurred, please contact customer support. Press any key to exit.");
+    
+            Console.ReadKey(intercept: true);
         }
     }
 
-    private static byte[,]? NextGeneration(byte[,] cells)
+    private static void NextGeneration(CellState[,] cells, CellState[,] nextGeneration)
     {
-        // TODO: Don't allocate memory for the next generation every time. use buffer
-        var nextGeneration = new byte[25, 25];
         var rowLength = cells.GetLength(0);
         var colLength = cells.GetLength(1);
 
@@ -62,69 +68,74 @@ static class Program
         for (var col = 0; col < colLength; col++)
         {
             var cellValue = cells[row, col];
-            if (cellValue != 0 && cellValue != 1)
+            var aliveNeighboursCount = CountAliveNeighbours(cells, row, col);
+
+            if (cellValue == CellState.Live)
             {
-                // TODO: Move user strings to resources
-                Console.WriteLine($"Something went wrong. Unknown cell value. [{row}, {col}] = {cellValue}");
-                return null;
+                nextGeneration[row, col] =
+                    aliveNeighboursCount < MinLiveNeighborsToSurvive || aliveNeighboursCount > MaxLiveNeighborsToSurvive
+                        ? CellState.Dead
+                        : CellState.Live;
             }
-
-            var aliveCellsCount = 0;
-
-            for (var neighbourRow = row - 1; neighbourRow <= row + 1; neighbourRow++)
-            for (var neighbourCol = col - 1; neighbourCol <= col + 1; neighbourCol++)
+            else if (aliveNeighboursCount == MaxLiveNeighborsToSurvive)
             {
-                if (neighbourRow < 0 || neighbourRow >= rowLength ||
-                    neighbourCol < 0 || neighbourCol >= colLength ||
-                    (neighbourRow == row && neighbourCol == col) ||
-                    cells[neighbourRow, neighbourCol] == 0)
-                    continue;
-
-                aliveCellsCount++;
-            }
-
-            // TODO: Place all numbers to consts
-            if (cellValue == 1)
-            {
-                nextGeneration[row, col] = aliveCellsCount < 2 || aliveCellsCount > 3 ? (byte)0 : (byte)1;
-            }
-            else if (aliveCellsCount == 3)
-            {
-                nextGeneration[row, col] = 1;
+                nextGeneration[row, col] = CellState.Live;
             }
             else
             {
                 nextGeneration[row, col] = cellValue;
             }
         }
-
-        return nextGeneration;
     }
 
-    private static void DisplayCells(byte[,] cells)
+    private static int CountAliveNeighbours(CellState[,] cells, int row, int col)
+    {
+        var rowLength = cells.GetLength(0);
+        var colLength = cells.GetLength(1);
+
+        var aliveCellsCount = 0;
+
+        for (var neighbourRow = row - 1; neighbourRow <= row + 1; neighbourRow++)
+        for (var neighbourCol = col - 1; neighbourCol <= col + 1; neighbourCol++)
+        {
+            if (neighbourRow < 0 || neighbourRow >= rowLength ||
+                neighbourCol < 0 || neighbourCol >= colLength ||
+                (neighbourRow == row && neighbourCol == col) ||
+                cells[neighbourRow, neighbourCol] == 0)
+                continue;
+
+            aliveCellsCount++;
+        }
+
+        return aliveCellsCount;
+    }
+
+    private static void DisplayCells(CellState[,] cells, int generationNumber)
     {
         Console.Clear();
 
-        // TODO: show generation number
-        Console.WriteLine("""
-                          Welcome to the Game of Life!
-                          Use the following keys:
-                            Press Any Key - Next Generation
-                            Esc           - Exit the game
-                          """);
+        // TODO: put user messages to resources
+        Console.WriteLine($"""
+                           Welcome to the Game of Life!
+                           Use the following keys:
+                             Press Any Key - Next Generation
+                             Esc           - Exit the game
+                             
+                             Generation {generationNumber}.
+                           """);
 
         for (var row = 0; row < cells.GetLength(0); row++)
         {
             for (var col = 0; col < cells.GetLength(1); col++)
             {
-                Console.Write(cells[row, col] == 1 ? "■ " : "□ ");
+                Console.Write(cells[row, col] == CellState.Live ? AliveCellSymbol : DeadCellSymbol);
             }
 
             Console.WriteLine();
         }
     }
 
-    private static void PlacePatternCentered(byte[,] grid, byte[,] pattern)
+    private static void PlacePatternCentered(CellState[,] grid, CellState[,] pattern)
     {
         var gridRows = grid.GetLength(0);
         var gridCols = grid.GetLength(1);
